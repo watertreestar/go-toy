@@ -23,6 +23,11 @@ func (dbFile *File) AppendEntry(entry *Entry) error {
 	return nil
 }
 
+// CloseFile close data file that File instance holds on
+func (dbFile *File) CloseFile() {
+	dbFile.File.Close()
+}
+
 // ReadEntry 从file中指定的offset处开始读取
 func (dbFile *File) ReadEntry(offset int64) (*Entry, error) {
 	// 1. Reader entry header first
@@ -63,10 +68,6 @@ func (dbFile *File) ReadEntry(offset int64) (*Entry, error) {
 // Merge 创建一个merge数据文件
 func (dbFile *File) Merge(mergeFileName string) error {
 	return nil
-}
-
-func (dbFile *File) increaseOffset(incr int64) {
-	dbFile.Offset += incr
 }
 
 // NewDBFile 创建一个DBFile

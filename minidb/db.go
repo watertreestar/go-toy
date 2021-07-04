@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	DataFileName        = "mini-db.data"
-	PUT          uint16 = 0
-	DEL          uint16 = 1
+	DataFileName             = "mini-db.data"
+	MergeTempFileName        = "mini-db-merge.data"
+	PUT               uint16 = 0
+	DEL               uint16 = 1
 )
 
 type DBEngine struct {
@@ -149,5 +150,59 @@ func (engine *DBEngine) loadIndex() error {
 
 // Compress 压缩数据文件 todo
 func (engine *DBEngine) Compress() error {
+	// Do nothing if no data exist
+	if engine.dbFile.Offset == 0 {
+		return nil
+	}
+
+	var (
+		validEntry []*db.Entry
+		offset     int64
+	)
+
+	for {
+		e, err := engine.dbFile.ReadEntry(offset)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+		// If current offset equals offset in index,it is valid
+		if off, ok := engine.indexes[string(e.Key)]; ok && off == offset {
+			validEntry = append(validEntry, e)
+		}
+		offset += e.GetSize()
+	}
+
+	if len(validEntry) > 0 {
+		// Create a new File instance file to save compressed data
+		mdf, err := db.NewDBFile(engine.dirPath, MergeTempFileName)
+		if err != nil {
+			return err
+		}
+
+		defer os.Remove(mdf.File.Name())
+		defer mdf.CloseFile()
+
+		// Write entry into new data file
+		for _, entry := range validEntry {
+			writeOff := mdf.Offset
+			err := mdf.AppendEntry(entry)
+			if err != nil {
+				return err
+			}
+
+			// Update index in mem
+			engine.indexes[string(entry.Key)] = writeOff
+		}
+
+		// Remove old data file and rename merge data file
+		os.Remove(engine.dbFile.File.Name())
+		os.Rename(mdf.File.Name(), engine.dbFile.Path+string(os.PathSeparator)+engine.dbFile.FileName)
+
+		engine.dbFile = mdf
+	}
+
 	return nil
 }
