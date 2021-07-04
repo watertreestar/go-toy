@@ -60,7 +60,8 @@ func TestReaderSource(t *testing.T) {
 
 	t.Run("Big Data", func(t *testing.T) {
 		const filename = "big.in"
-		const n = 800000
+		// 8byte * 1000000
+		const n = 10
 		file, err := os.Create(filename)
 		if err != nil {
 			panic(err)
