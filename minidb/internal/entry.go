@@ -19,9 +19,11 @@ type Entry struct {
 // NewEntry 创建一个Entry
 func NewEntry(key, value []byte, mark uint16) *Entry {
 	return &Entry{
-		Key:   key,
-		Value: value,
-		Mark:  mark,
+		Key:       key,
+		Value:     value,
+		Mark:      mark,
+		KeySize:   uint32(len(key)),
+		ValueSize: uint32(len(value)),
 	}
 }
 

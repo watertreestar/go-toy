@@ -35,29 +35,34 @@ func (dbFile *File) ReadEntry(offset int64) (*Entry, error) {
 		return nil, err
 	}
 
-	dbFile.increaseOffset(int64(EntryHeaderSize))
+	offset += int64(EntryHeaderSize)
 
 	// Extract key size and value size from entry header
 	// 2. Read key from entry file
 	if e.KeySize > 0 {
 		key := make([]byte, e.KeySize)
-		if _, err = dbFile.File.ReadAt(key, dbFile.Offset); err != nil {
+		if _, err = dbFile.File.ReadAt(key, offset); err != nil {
 			return nil, err
 		}
 		e.Key = key
 	}
 
-	dbFile.increaseOffset(int64(e.KeySize))
+	offset += int64(e.KeySize)
 	// 3. Read value from entry file
 	if e.ValueSize > 0 {
 		value := make([]byte, e.ValueSize)
-		if _, err = dbFile.File.ReadAt(value, dbFile.Offset); err != nil {
+		if _, err = dbFile.File.ReadAt(value, offset); err != nil {
 			return nil, err
 		}
 		e.Value = value
 	}
 
 	return e, nil
+}
+
+// Merge 创建一个merge数据文件
+func (dbFile *File) Merge(mergeFileName string) error {
+	return nil
 }
 
 func (dbFile *File) increaseOffset(incr int64) {
