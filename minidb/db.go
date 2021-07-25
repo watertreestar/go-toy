@@ -148,7 +148,7 @@ func (engine *DBEngine) loadIndex() error {
 	return nil
 }
 
-// Compress 压缩数据文件 todo
+// Compress 压缩数据文件
 func (engine *DBEngine) Compress() error {
 	// Do nothing if no data exist
 	if engine.dbFile.Offset == 0 {

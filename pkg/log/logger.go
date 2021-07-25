@@ -46,7 +46,7 @@ type Logger struct {
 	callDepth     int
 }
 
-var _loggers map[string]*Logger
+var _loggers map[string]*Logger = make(map[string]*Logger, 0)
 var _logger *Logger
 
 // Output format the log message
